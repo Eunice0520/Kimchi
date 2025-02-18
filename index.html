@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -62,40 +63,28 @@
 
     <script>
         function startSpeedTest() {
-            let fileSize = 1 * 1024 * 1024; // 1MB 測試文件大小
-            let startTime = new Date().getTime();
-            let xhr = new XMLHttpRequest();
-            xhr.open("GET", "https://speed.hetzner.de/1MB.bin", true);
-            xhr.responseType = "arraybuffer";
+            let kimchi = document.getElementById("kimchi");
+            let status = document.getElementById("status");
 
-            xhr.onload = function () {
-                let endTime = new Date().getTime();
-                let duration = (endTime - startTime) / 1000; // 下載所需時間（秒）
-                let speed = (fileSize / duration / 1024 / 1024).toFixed(2); // 轉換為 MB/s
-
-                let kimchi = document.getElementById("kimchi");
-                let status = document.getElementById("status");
+            if ('connection' in navigator) {
+                let speed = navigator.connection.downlink; // 取得設備的網速 (Mbps)
 
                 if (speed > 100) {
                     kimchi.style.backgroundColor = "#28a745"; // 綠色（超高速）
-                    status.innerText = "⚡ 超高速泡菜！你的 Wi-Fi 簡直神速！";
+                    status.innerText = "⚡ 超高速泡菜！你的 Wi-Fi 簡直神速！ ( " + speed + " Mbps )";
                 } else if (speed > 50) {
                     kimchi.style.backgroundColor = "#ffc107"; // 黃色（正常發酵）
-                    status.innerText = "🍲 你的泡菜正在完美發酵！";
+                    status.innerText = "🍲 你的泡菜正在完美發酵！( " + speed + " Mbps )";
                 } else if (speed > 10) {
                     kimchi.style.backgroundColor = "#ff5733"; // 橙色（慢速發酵）
-                    status.innerText = "🐢 你的泡菜需要更久時間發酵...";
+                    status.innerText = "🐢 你的泡菜需要更久時間發酵... ( " + speed + " Mbps )";
                 } else {
                     kimchi.style.backgroundColor = "#6c757d"; // 灰色（泡菜變質）
-                    status.innerText = "☠️ Wi-Fi 太慢！泡菜直接發臭！";
+                    status.innerText = "☠️ Wi-Fi 太慢！泡菜直接發臭！ ( " + speed + " Mbps )";
                 }
-            };
-
-            xhr.onerror = function() {
-                document.getElementById("status").innerText = "❌ 測速失敗，請檢查網絡！";
-            };
-
-            xhr.send();
+            } else {
+                status.innerText = "❌ 無法獲取網速資訊，請檢查瀏覽器兼容性！";
+            }
         }
     </script>
 
