@@ -1,102 +1,285 @@
-
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電子泡菜測速儀</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f7f7f7;
-        }
-        h1 {
-            color: #333;
-        }
-        .kimchi-container {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-        .kimchi {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background-color: #ff5733;
-            transition: background-color 1s ease-in-out;
-        }
-        .status {
-            margin-top: 20px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-        }
-        .button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 18px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>E-Kimchi Speed Test（電子泡菜測速器）</title>
+  <style>
+    /* 全局樣式重設與排版 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: sans-serif;
+    }
+
+    body {
+      background-color: #fdf3e7;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-top: 40px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-size: 2em;
+    }
+
+    /* 泡菜區塊（Wi-Fi 泡菜動畫） */
+    .kimchi-container {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 20px auto;
+      background-color: #aaa;
+      border-radius: 50%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .kimchi-animate {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: linear-gradient(to bottom right, #ebf8e1, #a8d08d);
+      animation: bubble 2s infinite ease-in-out;
+    }
+
+    @keyframes bubble {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    /* 開始測速按鈕 */
+    #start-btn {
+      background-color: #ff9d2f;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 15px 30px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #start-btn:hover {
+      background-color: #ff7c00;
+    }
+
+    /* 測速進度條區塊 */
+    #progress-bar-container {
+      width: 80%;
+      max-width: 400px;
+      height: 20px;
+      background-color: #eee;
+      border-radius: 10px;
+      margin: 20px 0;
+      overflow: hidden;
+      display: none; /* 初始隱藏，按下開始測速後顯示 */
+    }
+
+    #progress-bar {
+      height: 100%;
+      background-color: #4caf50;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* 顯示測速數據 */
+    #speed-info {
+      margin: 20px;
+      text-align: center;
+      display: none; /* 初始隱藏 */
+    }
+
+    .speed-value {
+      font-weight: bold;
+      color: #c0392b;
+      margin: 0 5px;
+    }
+
+    /* 測試結果顯示 */
+    #result {
+      margin: 20px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      background-color: #fff;
+      display: none; /* 初始隱藏 */
+      text-align: center;
+    }
+
+    /* 額外模式的選擇區（可自行擴充功能） */
+    .extra-modes {
+      margin-top: 30px;
+      text-align: center;
+    }
+    .extra-modes button {
+      background-color: #8e44ad;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .extra-modes button:hover {
+      background-color: #732d91;
+    }
+  </style>
 </head>
+
 <body>
+  <!-- 大標題 -->
+  <h1>你的網速能醃出完美電子泡菜嗎？</h1>
 
-    <h1>電子泡菜測速儀</h1>
-    <p>你的 Wi-Fi 信號能讓泡菜成功發酵嗎？點擊開始測速！</p>
+  <!-- Wi-Fi 泡菜動畫區 -->
+  <div class="kimchi-container">
+    <div class="kimchi-animate" id="kimchi"></div>
+  </div>
 
-    <div class="kimchi-container">
-        <div class="kimchi" id="kimchi"></div>
-        <div class="status" id="status">等待測速...</div>
-        <button class="button" onclick="startSpeedTest()">開始測速</button>
-    </div>
+  <!-- 開始測速按鈕 -->
+  <button id="start-btn">開始測速</button>
 
-    <script>
-        function startSpeedTest() {
-            let imageUrl = "https://via.placeholder.com/1000x1000.png?" + new Date().getTime(); // 確保每次請求都是新的
-            let fileSizeInBits = 1000 * 1000 * 8; // 1MB 大小的圖片 (bit)
-            let startTime = new Date().getTime();
+  <!-- 測速過程進度條 -->
+  <div id="progress-bar-container">
+    <div id="progress-bar"></div>
+  </div>
 
-            let image = new Image();
-            image.src = imageUrl;
+  <!-- 測速數據顯示區 -->
+  <div id="speed-info">
+    <p>下載速度：<span class="speed-value" id="downloadSpeed">0</span> MB/s</p>
+    <p>上傳速度：<span class="speed-value" id="uploadSpeed">0</span> MB/s</p>
+    <p>Ping 值：<span class="speed-value" id="pingValue">0</span> ms</p>
+  </div>
 
-            image.onload = function () {
-                let endTime = new Date().getTime();
-                let duration = (endTime - startTime) / 1000; // 下載所需時間（秒）
-                let speedMbps = (fileSizeInBits / duration / 1024 / 1024).toFixed(2); // 轉換為 Mbps
+  <!-- 測試結果顯示區 -->
+  <div id="result"></div>
 
-                let kimchi = document.getElementById("kimchi");
-                let status = document.getElementById("status");
+  <!-- 額外模式 (可自行擴充功能，如多人比賽/瘋狂模式等) -->
+  <div class="extra-modes">
+    <button id="multi-mode-btn">多人比賽模式</button>
+    <button id="crazy-mode-btn">泡菜瘋狂模式</button>
+  </div>
 
-                if (speedMbps > 100) {
-                    kimchi.style.backgroundColor = "#28a745"; // 綠色（超高速）
-                    status.innerText = "⚡ 超高速泡菜！你的 Wi-Fi 簡直神速！( " + speedMbps + " Mbps )";
-                } else if (speedMbps > 50) {
-                    kimchi.style.backgroundColor = "#ffc107"; // 黃色（正常發酵）
-                    status.innerText = "🍲 你的泡菜正在完美發酵！( " + speedMbps + " Mbps )";
-                } else if (speedMbps > 10) {
-                    kimchi.style.backgroundColor = "#ff5733"; // 橙色（慢速發酵）
-                    status.innerText = "🐢 你的泡菜需要更久時間發酵... ( " + speedMbps + " Mbps )";
-                } else {
-                    kimchi.style.backgroundColor = "#6c757d"; // 灰色（泡菜變質）
-                    status.innerText = "☠️ Wi-Fi 太慢！泡菜直接發臭！( " + speedMbps + " Mbps )";
-                }
-            };
+  <!-- 前端邏輯 (以 JS 模擬) -->
+  <script>
+    const startBtn       = document.getElementById('start-btn');
+    const progressBar    = document.getElementById('progress-bar');
+    const progressBarCtn = document.getElementById('progress-bar-container');
+    const downloadSpeed  = document.getElementById('downloadSpeed');
+    const uploadSpeed    = document.getElementById('uploadSpeed');
+    const pingValue      = document.getElementById('pingValue');
+    const speedInfo      = document.getElementById('speed-info');
+    const result         = document.getElementById('result');
+    const kimchi         = document.getElementById('kimchi');
 
-            image.onerror = function () {
-                document.getElementById("status").innerText = "❌ 測速失敗，請檢查網絡！";
-            };
+    // 監聽「開始測速」按鈕
+    startBtn.addEventListener('click', function () {
+      // 重置畫面
+      resetUI();
+      progressBarCtn.style.display = 'block';
+      speedInfo.style.display = 'block';
+
+      // 模擬測速過程（假裝需要幾秒時間）
+      let progress = 0;
+      let testInterval = setInterval(() => {
+        progress += 10;
+        progressBar.style.width = progress + '%';
+
+        if (progress >= 100) {
+          clearInterval(testInterval);
+          // 測速完成：隨機生成「下載」「上傳」「Ping」數據
+          generateRandomSpeedResult();
         }
-    </script>
+      }, 300);
+    });
 
+    // 隨機產生測速結果
+    function generateRandomSpeedResult() {
+      // 簡單隨機值，範圍可自行調整
+      let dlSpeed = (Math.random() * 150).toFixed(1); // 0~150
+      let ulSpeed = (Math.random() * 100).toFixed(1); // 0~100
+      let ping    = Math.floor(Math.random() * 100);  // 0~100
+
+      // 更新畫面
+      downloadSpeed.textContent = dlSpeed;
+      uploadSpeed.textContent   = ulSpeed;
+      pingValue.textContent     = ping;
+
+      // 依據下載速度顯示「泡菜顏色」
+      changeKimchiColor(dlSpeed);
+
+      // 顯示最終等級
+      displayResult(dlSpeed);
+    }
+
+    // 依據速度改變泡菜顏色
+    function changeKimchiColor(dlSpeed) {
+      /* 
+        綠色 → 網速快（>50MB/s）
+        橙色 → 一般（10~50MB/s）
+        紅色 → 差（<10MB/s） 
+      */
+      if (dlSpeed > 50) {
+        kimchi.style.background = 'linear-gradient(to bottom right, #c3f7b0, #6fae52)';
+      } else if (dlSpeed > 10) {
+        kimchi.style.background = 'linear-gradient(to bottom right, #ffe19c, #ffb300)';
+      } else {
+        kimchi.style.background = 'linear-gradient(to bottom right, #f06262, #a83636)';
+      }
+    }
+
+    // 依據速度顯示結果訊息
+    function displayResult(dlSpeed) {
+      let text = '';
+      let bgColor = '#fff';
+
+      if (dlSpeed > 100) {
+        text    = '⚡「超高速泡菜」：你的 Wi-Fi 速度堪比光速，泡菜剛進缸就熟了！';
+        bgColor = '#ccffcc';
+      } else if (dlSpeed > 50) {
+        text    = '🚀「正常發酵泡菜」：你的泡菜熟成穩定，發酵過程完美。';
+        bgColor = '#e0f7fa';
+      } else if (dlSpeed > 10) {
+        text    = '🐢「慢速泡菜」：你的網速有點慢，泡菜需要更長時間。';
+        bgColor = '#fff9c4';
+      } else {
+        text    = '☠️「泡菜變質了！」：你的 Wi-Fi 是不是在偷懶？泡菜直接發臭！';
+        bgColor = '#ffebee';
+      }
+
+      result.textContent = text;
+      result.style.display = 'block';
+      result.style.backgroundColor = bgColor;
+    }
+
+    // 重置 UI
+    function resetUI() {
+      progressBar.style.width = '0%';
+      result.style.display    = 'none';
+      kimchi.style.background = 'linear-gradient(to bottom right, #ebf8e1, #a8d08d)';
+    }
+
+    // 以下為多人比賽模式、泡菜瘋狂模式的啟動按鈕 (此處僅示範，可以在此基礎上擴充功能)
+    document.getElementById('multi-mode-btn').addEventListener('click', function() {
+      alert('「多人比賽模式」功能尚未實作，可自行擴充！');
+    });
+
+    document.getElementById('crazy-mode-btn').addEventListener('click', function() {
+      alert('「泡菜瘋狂模式」功能尚未實作，可自行擴充！');
+    });
+  </script>
 </body>
 </html>
