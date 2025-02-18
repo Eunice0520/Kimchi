@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -63,28 +62,39 @@
 
     <script>
         function startSpeedTest() {
-            let kimchi = document.getElementById("kimchi");
-            let status = document.getElementById("status");
+            let imageUrl = "https://via.placeholder.com/1000x1000.png?" + new Date().getTime(); // 確保每次請求都是新的
+            let fileSizeInBits = 1000 * 1000 * 8; // 1MB 大小的圖片 (bit)
+            let startTime = new Date().getTime();
 
-            if ('connection' in navigator) {
-                let speed = navigator.connection.downlink; // 取得設備的網速 (Mbps)
+            let image = new Image();
+            image.src = imageUrl;
 
-                if (speed > 100) {
+            image.onload = function () {
+                let endTime = new Date().getTime();
+                let duration = (endTime - startTime) / 1000; // 下載所需時間（秒）
+                let speedMbps = (fileSizeInBits / duration / 1024 / 1024).toFixed(2); // 轉換為 Mbps
+
+                let kimchi = document.getElementById("kimchi");
+                let status = document.getElementById("status");
+
+                if (speedMbps > 100) {
                     kimchi.style.backgroundColor = "#28a745"; // 綠色（超高速）
-                    status.innerText = "⚡ 超高速泡菜！你的 Wi-Fi 簡直神速！ ( " + speed + " Mbps )";
-                } else if (speed > 50) {
+                    status.innerText = "⚡ 超高速泡菜！你的 Wi-Fi 簡直神速！( " + speedMbps + " Mbps )";
+                } else if (speedMbps > 50) {
                     kimchi.style.backgroundColor = "#ffc107"; // 黃色（正常發酵）
-                    status.innerText = "🍲 你的泡菜正在完美發酵！( " + speed + " Mbps )";
-                } else if (speed > 10) {
+                    status.innerText = "🍲 你的泡菜正在完美發酵！( " + speedMbps + " Mbps )";
+                } else if (speedMbps > 10) {
                     kimchi.style.backgroundColor = "#ff5733"; // 橙色（慢速發酵）
-                    status.innerText = "🐢 你的泡菜需要更久時間發酵... ( " + speed + " Mbps )";
+                    status.innerText = "🐢 你的泡菜需要更久時間發酵... ( " + speedMbps + " Mbps )";
                 } else {
                     kimchi.style.backgroundColor = "#6c757d"; // 灰色（泡菜變質）
-                    status.innerText = "☠️ Wi-Fi 太慢！泡菜直接發臭！ ( " + speed + " Mbps )";
+                    status.innerText = "☠️ Wi-Fi 太慢！泡菜直接發臭！( " + speedMbps + " Mbps )";
                 }
-            } else {
-                status.innerText = "❌ 無法獲取網速資訊，請檢查瀏覽器兼容性！";
-            }
+            };
+
+            image.onerror = function () {
+                document.getElementById("status").innerText = "❌ 測速失敗，請檢查網絡！";
+            };
         }
     </script>
 
