@@ -1,0 +1,103 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電子泡菜測速儀</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f7f7f7;
+        }
+        h1 {
+            color: #333;
+        }
+        .kimchi-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .kimchi {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #ff5733;
+            transition: background-color 1s ease-in-out;
+        }
+        .status {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        .button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>電子泡菜測速儀</h1>
+    <p>你的 Wi-Fi 信號能讓泡菜成功發酵嗎？點擊開始測速！</p>
+
+    <div class="kimchi-container">
+        <div class="kimchi" id="kimchi"></div>
+        <div class="status" id="status">等待測速...</div>
+        <button class="button" onclick="startSpeedTest()">開始測速</button>
+    </div>
+
+    <script>
+        function startSpeedTest() {
+            let fileSize = 1 * 1024 * 1024; // 1MB 測試文件大小
+            let startTime = new Date().getTime();
+            let xhr = new XMLHttpRequest();
+            xhr.open("GET", "https://speed.hetzner.de/1MB.bin", true);
+            xhr.responseType = "arraybuffer";
+
+            xhr.onload = function () {
+                let endTime = new Date().getTime();
+                let duration = (endTime - startTime) / 1000; // 下載所需時間（秒）
+                let speed = (fileSize / duration / 1024 / 1024).toFixed(2); // 轉換為 MB/s
+
+                let kimchi = document.getElementById("kimchi");
+                let status = document.getElementById("status");
+
+                if (speed > 100) {
+                    kimchi.style.backgroundColor = "#28a745"; // 綠色（超高速）
+                    status.innerText = "⚡ 超高速泡菜！你的 Wi-Fi 簡直神速！";
+                } else if (speed > 50) {
+                    kimchi.style.backgroundColor = "#ffc107"; // 黃色（正常發酵）
+                    status.innerText = "🍲 你的泡菜正在完美發酵！";
+                } else if (speed > 10) {
+                    kimchi.style.backgroundColor = "#ff5733"; // 橙色（慢速發酵）
+                    status.innerText = "🐢 你的泡菜需要更久時間發酵...";
+                } else {
+                    kimchi.style.backgroundColor = "#6c757d"; // 灰色（泡菜變質）
+                    status.innerText = "☠️ Wi-Fi 太慢！泡菜直接發臭！";
+                }
+            };
+
+            xhr.onerror = function() {
+                document.getElementById("status").innerText = "❌ 測速失敗，請檢查網絡！";
+            };
+
+            xhr.send();
+        }
+    </script>
+
+</body>
+</html>
